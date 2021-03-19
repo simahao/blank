@@ -1,0 +1,419 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+This is a checkstyle configuration file. For descriptions of
+what the following rules do, please see the checkstyle configuration
+page at http://checkstyle.sourceforge.net/config.html.
+This file is based on the checkstyle file of Apache Beam.
+-->
+
+<!--
+    author      version     date            remark
+    zhanghao    1.0         2018/11/27      init,so strict
+    zhanghao    1.1         2018/11/29      add camel naming and so on
+    zhanghao    1.2         2019/04/17      add suppressionFilter example in checkstyle.xml to support checkstyle plugin in vscode
+    zhanghao    1.3         2019/04/28      update dtd link for security
+                                            update RegexpSingleline s+$ -> [^\*]s+$, space after * in the javadoc is permitted
+    zhanghao    1.4         2019/04/29      add EqualsAvoidNull,EmptyCatchBlock,CatchParameterName
+    zhanghao    1.5         2019/05/19      change config directory
+    zhanghao    1.6         2019/06/03
+    zhanghao    1.7         2019/08/14      add some checker.checkstyle upgrade to 8.23.
+    zhanghao    1.8         2019/08/16      refactor order of checkers by classify.
+    zhanghao    1.9         2020/07/26      support checkstyle8.25
+-->
+<module name="Checker">
+    <property name="severity" value="error"/>
+    <property name="charset" value="UTF-8"/>
+    <property name="fileExtensions" value="java, properties, xml"/>
+
+    <!-- diff command don't show previous lines as changed and easily add new content -->
+    <module name="NewlineAtEndOfFile"/>
+
+    <!-- easily compare differences between version , u can use replace all in IDE with regexp \s+$ or vim %s/\s+$//g command to replace -->
+    <module name="RegexpSingleline">
+        <property name="format" value="[^\*]\s+$"/>
+        <property name="message" value="Trailing whitespace"/>
+    </module>
+
+    <module name="FileLength">
+        <property name="max" value="4000"/>
+    </module>
+
+    <!-- Checks for long lines. -->
+    <module name="LineLength">
+        <property name="max" value="200"/>
+        <!-- ignore lines that begin with " * ", followed by just one word, such as within a Javadoc comment -->
+        <property name="ignorePattern" value="^ *\* *[^ ]+$"/>
+        <property name="fileExtensions" value="java"/>
+    </module>
+
+    <!-- can't include tab(\t), replace tab with 4 spaces, u should set tab=4 spaces in IDE -->
+    <module name="FileTabCharacter">
+        <property name="eachLine" value="true"/>
+    </module>
+
+    <!-- Checks properties files for duplicated properties. -->
+    <module name="UniqueProperties"/>
+
+    <module name="TreeWalker">
+    <!-- Annotation -->
+        <!-- Check location of annotation on language elements -->
+        <module name="AnnotationLocation">
+            <property name="id" value="AnnotationLocationMostCases"/>
+            <property name="tokens" value="CLASS_DEF, INTERFACE_DEF, ENUM_DEF, METHOD_DEF, CTOR_DEF"/>
+        </module>
+        <module name="AnnotationLocation">
+            <property name="id" value="AnnotationLocationVariables"/>
+            <property name="tokens" value="VARIABLE_DEF"/>
+            <property name="allowSamelineMultipleAnnotations" value="true"/>
+        </module>
+        <!--SuppressWarnings is not allowed to suppress -->
+        <module name="SuppressWarnings">
+            <property name="format" value="^unused$|^rawtype$"/>
+            <property name="tokens" value="METHOD_DEF"/>
+        </module>
+
+    <!-- Block Checks -->
+        <!-- text means comment in block can pass the check -->
+        <module name="EmptyBlock">
+            <property name="option" value="TEXT"/>
+            <property name="tokens" value="LITERAL_TRY, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_SWITCH"/>
+        </module>
+        <!-- default brace:{} check include if else do for while statement, next statement won't be violated-->
+        <module name="NeedBraces"/>
+        <!-- The brace must always be on the end of the line -->
+        <module name="LeftCurly"/>
+        <!-- so complex, pls see reference at http://checkstyle.sourceforge.net/property_types.html#rcurly -->
+        <module name="RightCurly">
+            <property name="id" value="RightCurlySame"/>
+            <property name="option" value="same"/>
+            <property name="tokens" value="LITERAL_TRY, LITERAL_CATCH, LITERAL_FINALLY, LITERAL_IF, LITERAL_ELSE, LITERAL_DO"/>
+        </module>
+        <module name="RightCurly">
+            <property name="id" value="RightCurlyAlone"/>
+            <property name="option" value="alone"/>
+            <property name="tokens" value="CLASS_DEF, METHOD_DEF, LITERAL_FOR, LITERAL_WHILE, STATIC_INIT, INSTANCE_INIT"/>
+        </module>
+        <module name="RightCurly">
+            <property name="id" value="RightCurlyAloneOrSingle"/>
+            <property name="option" value="alone_or_singleline"/>
+            <property name="tokens" value="CTOR_DEF"/>
+        </module>
+        <!-- Checks for empty catch blocks. By default check allows empty catch block with any comment inside. -->
+        <module name="EmptyCatchBlock"/>
+
+
+    <!-- Class Design -->
+        <!-- Checks that each top-level class, interface or enum resides in a source file of its own -->
+        <module name="OneTopLevelClass"/>
+        <!--Checks that a class which has only private constructors is declared as final.-->
+        <module name="FinalClass"/>
+
+    <!-- Coding -->
+        <!-- Checks that there is only one statement per line -->
+        <module name="OneStatementPerLine"/>
+        <!-- Checks that each variable declaration is in its own statement and on its own line -->
+        <module name="MultipleVariableDeclarations"/>
+        <!-- Checks that switch statement has "default" clause -->
+        <module name="MissingSwitchDefault"/>
+        <!-- <module name="FallThrough"/> -->
+        <!-- Detects empty statements (standalone ";" semicolon). -->
+        <module name="EmptyStatement"/>
+        <!-- Checks that any combination of String literals is on the left side of an equals() comparison. -->
+        <module name="EqualsAvoidNull"/>
+        <!-- Checks that string literals are not used with == or != -->
+        <module name="StringLiteralEquality"/>
+        <!-- Check that the default is after all the cases in a switch statement -->
+        <module name="DefaultComesLast"/>
+        <!--Checks the order in which parts of the class or interface declaration are defined.-->
+        <!--
+            1.Class (static) variables. First the public class variables, then protected, then package level (no access modifier), and then private.
+            2.Instance variables. First the public class variables, then protected, then package level (no access modifier), and then private.
+            3.Constructors
+            4.Methods
+        -->
+        <module name="DeclarationOrder">
+            <property name="ignoreConstructors" value="true"/>
+        </module>
+        <!--This check can be used to ensure that types are not declared to be thrown. Declaring that a method throws java.lang.Error or java.lang.RuntimeException is almost never acceptable.-->
+        <module name="IllegalThrows"/>
+        <!--Check for ensuring that for loop control variables are not modified inside the for block.-->
+        <module name="ModifiedControlVariable">
+            <property name="skipEnhancedForLoopVariable" value="true"/>
+        </module>
+        <!--Checks that each variable declaration is in its own statement and on its own line.-->
+        <module name="MultipleVariableDeclarations"/>
+        <!--Checks if unnecessary parentheses are used in a statement or expression.-->
+        <module name="UnnecessaryParentheses"/>
+
+        <!--Checks if unnecessary semicolon is in enum definitions. Semicolon is not needed if enum body contains only enum constants.-->
+        <module name="UnnecessarySemicolonInEnumeration"/>
+
+        <!--Checks if unnecessary semicolon is used in last resource declaration.-->
+        <module name="UnnecessarySemicolonInTryWithResources"/>
+        <!-- developers often simply catch Exception in an attempt to handle multiple exception classes. This unfortunately leads to code that inadvertently catches NullPointerException, OutOfMemoryError, etc -->
+        <!-- <module name="IllegalCatch"/> -->
+
+    <!-- Import -->
+        <!-- Checks for redundant import statements. -->
+        <module name="RedundantImport">
+            <message key="import.redundancy" value="Redundant import {0}."/>
+        </module>
+        <!-- Checks that there are no import statements that use the * notation -->
+        <module name="AvoidStarImport">
+            <!-- u can uncomment below property to control supression -->
+            <!--<property name="excludes" value="java.io,java.net,java.lang.Math"/>
+            <property name="allowStaticMemberImports" value="true"/> -->
+        </module>
+        <!-- u can't use packages with sun.* -->
+        <module name="IllegalImport"/>
+        <!-- Checks for unused import statements -->
+        <module name="UnusedImports">
+            <message key="import.unused" value="Unused import: {0}."/>
+        </module>
+        <!-- Checks for out of order import statements. -->
+        <!-- <module name="ImportOrder">
+            <property name="groups" value="org.apache.flink,org.apache.flink.shaded,javax,java,scala"/>
+            <property name="ordered" value="false"/>
+            <property name="separated" value="false"/>
+            <property name="sortStaticImportsAlphabetically" value="true"/>
+            <property name="option" value="bottom"/>
+            <property name="tokens" value="STATIC_IMPORT"/>
+        </module> -->
+
+    <!-- Javadoc Comments -->
+        <!-- Checks the Javadoc of a method or constructor -->
+        <module name="JavadocMethod">
+            <property name="scope" value="protected"/>
+            <property name="allowMissingThrowsTags" value="true"/>
+            <property name="allowUndeclaredRTE" value="true"/>
+            <property name="allowThrowsTagsForSubclasses" value="true"/>
+            <property name="allowedAnnotations" value="Override"/>
+        </module>
+
+        <!-- Checks for missing Javadoc comments for a method or constructor. -->
+        <!-- <module name="MissingJavadocMethod">
+            <property name="scope" value="protected"/>
+            <property name="allowMissingPropertyJavadoc" value="true"/>
+            <property name="ignoreMethodNamesRegex" value="^test.*$|main"/>
+            <property name="tokens" value="METHOD_DEF, ANNOTATION_FIELD_DEF"/>
+        </module> -->
+
+        <!--Checks Javadoc comments for class and interface definitions.-->
+        <module name="JavadocType">
+            <property name="scope" value="protected"/>
+            <property name="authorFormat" value="\S"/>
+            <property name="allowedAnnotations" value="SpringBootApplication,Configuration"/>
+        </module>
+        <!-- Checks for missing Javadoc comments for class, enum, interface, and annotation interface definitions. -->
+        <!-- <module name="MissingJavadocType">
+            <property name="scope" value="protected"/>
+            <property name="skipAnnotations" value="SpringBootApplication,Configuration,Documented"/>
+        </module> -->
+        <!--Checks that Javadocs are located at the correct position.-->
+        <module name="InvalidJavadocPosition"/>
+        <!--1.There is one blank line between each of two paragraphs and one blank line before the at-clauses block if it is present.-->
+        <!--2.Each paragraph but the first has <p> immediately before the first word, with no space after.-->
+        <module name="JavadocParagraph"/>
+
+    <!-- Metrics -->
+
+    <!-- Miscellaneous -->
+        <!--the class Foo must be in a file named Foo.java.-->
+        <module name="OuterTypeFilename"/>
+        <!--String arr[] is wrong, that is c++ style, String[] arr is ok-->
+        <module name="ArrayTypeStyle"/>
+        <!--Checks that long constants are defined with an upper ell, long a = 1L is ok, lower character 'l' is wrong,
+            because character l like number 1
+        -->
+        <module name="UpperEll"/>
+        <!-- Checks correct indentation of Java code. -->
+        <module name="Indentation"/>
+        <!-- Controls the indentation between comments and surrounding code -->
+        <!-- http://checkstyle.sourceforge.net/config_misc.html#CommentsIndentation -->
+        <module name="CommentsIndentation"/>
+
+    <!-- Modifiers -->
+        <!-- the order is public, protected, private, abstract, static, final, transient, volatile, synchronized, native, strictfp -->
+        <module name="ModifierOrder"/>
+        <!--Checks for implicit modifiers on interface members and nested types.-->
+        <!-- <module name="InterfaceMemberImpliedModifier"/> -->
+
+        <!--Checks for redundant modifiers in:
+            1.Interface and annotation definitions.
+            2.Final modifier on methods of final and anonymous classes.
+            3.Inner interface declarations that are declared as static.
+            4.Class constructors.
+            5.Nested enum definitions that are declared as static.
+        -->
+        <module name="RedundantModifier"/>
+
+    <!-- Naming Convertions -->
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]{1,})*$"/>
+            <message key="name.invalidPattern" value="Package name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- type include class,interface,enum,annotation, default check is "^[A-Z][a-zA-Z0-9]*$" -->
+        <module name="TypeName">
+            <message key="name.invalidPattern" value="Type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="MemberName">
+            <message key="name.invalidPattern" value="Member name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="ParameterName">
+            <message key="name.invalidPattern" value="Parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="LambdaParameterName">
+            <message key="name.invalidPattern" value="Lambda parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^(e|ex|t)$" -->
+        <module name="CatchParameterName">
+            <property name="format" value="^(e|ex|t)$" />
+            <message key="name.invalidPattern" value="Catch parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="LocalVariableName">
+            <property name="allowOneCharVarInForLoop" value="true"/>
+            <message key="name.invalidPattern" value="Local variable name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="LocalFinalVariableName">
+            <message key="name.invalidPattern" value="Local final variable name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="ClassTypeParameterName">
+            <!-- <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/> -->
+            <property name="format" value="^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$"/>
+            <message key="name.invalidPattern" value="Class type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="MethodTypeParameterName">
+            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+            <message key="name.invalidPattern" value="Method type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="InterfaceTypeParameterName">
+            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*[T]$)"/>
+            <message key="name.invalidPattern" value="Interface type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="ConstantName">
+            <property name="format" value="^([A-Z][A-Z0-9]*(_[A-Z0-9]+)*|FLAG_.*)$"/>
+            <message key="name.invalidPattern" value="Variable ''{0}'' should be in ALL_CAPS (if it is a constant)."/>
+        </module>
+        <!-- "^[a-z][a-zA-Z0-9]*$" -->
+        <module name="StaticVariableName">
+            <message key="name.invalidPattern" value="Variable ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="MethodName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"/>
+            <message key="name.invalidPattern" value="Method name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <!-- enforce camel case naming -->
+        <module name="AbbreviationAsWordInName">
+            <property name="allowedAbbreviationLength" value="0"/>
+            <property name="allowedAbbreviations" value="XML,URL,CSV,DB,JDBC,JSON,EQ,LE,LT,GE,GT,MT,R,X,VO,MT,R,X,TC,CIQ,VT,CAS,JWT"/>
+        </module>
+        <!--Checks that interface type parameter names conform to a format specified by the format property.-->
+        <!-- interface First<Tt> {} is valid-->
+        <module name="InterfaceTypeParameterName">
+            <property name="format" value="^[A-Z]+$"/>
+        </module>
+        <!-- Checks that catch parameter names conform to a format specified by the format property. -->
+        <!-- allow e|ex|t -->
+        <!-- <module name="CatchParameterName"/> -->
+
+    <!-- Regexp -->
+        <!-- Prohibit T.getT() methods for standard boxed types -->
+        <module name="Regexp">
+            <property name="format" value="Boolean\.getBoolean"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="message" value="Use System.getProperties() to get system properties."/>
+        </module>
+        <module name="Regexp">
+            <property name="format" value="Integer\.getInteger"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="message" value="Use System.getProperties() to get system properties."/>
+        </module>
+        <module name="Regexp">
+            <property name="format" value="Long\.getLong"/>
+            <property name="illegalPattern" value="true"/>
+            <property name="message" value="Use System.getProperties() to get system properties."/>
+        </module>
+        <!-- Detect multiple consecutive semicolons (e.g. ";;"). -->
+        <module name="RegexpSinglelineJava">
+            <property name="format" value=";{2,}"/>
+            <property name="message" value="Use one semicolon"/>
+            <property name="ignoreComments" value="true"/>
+        </module>
+
+    <!-- Size Violations -->
+        <!-- Checks for long anonymous inner classes. -->
+        <module name="AnonInnerLength">
+            <property name="max" value="100"/>
+        </module>
+        <module name="MethodLength">
+            <property name="tokens" value="METHOD_DEF"/>
+            <property name="max" value="150"/>
+            <property name="countEmpty" value="false"/>
+        </module>
+
+    <!-- Whitespace -->
+        <!-- Checks that a token is surrounded by whitespace. -->
+        <module name="WhitespaceAround">
+            <property name="tokens" value="ASSIGN, BAND, BAND_ASSIGN, BOR,
+              BOR_ASSIGN, BSR, BSR_ASSIGN, BXOR, BXOR_ASSIGN, COLON, DIV, DIV_ASSIGN,
+              DO_WHILE, EQUAL, GE, GT, LAMBDA, LAND, LCURLY, LE, LITERAL_CATCH, LITERAL_DO,
+              LITERAL_ELSE, LITERAL_FINALLY, LITERAL_FOR, LITERAL_IF, LITERAL_RETURN,
+              LITERAL_SWITCH, LITERAL_SYNCHRONIZED, LITERAL_TRY, LITERAL_WHILE, LOR, LT,
+              MINUS, MINUS_ASSIGN, MOD, MOD_ASSIGN, NOT_EQUAL, PLUS, PLUS_ASSIGN, QUESTION,
+              RCURLY, SL, SLIST, SL_ASSIGN, SR, SR_ASSIGN, STAR, STAR_ASSIGN, LITERAL_ASSERT,
+              TYPE_EXTENSION_AND"/>
+            <property name="allowEmptyConstructors" value="true"/>
+            <property name="allowEmptyLambdas" value="true"/>
+        </module>
+        <!-- Checks that a token is followed by whitespace -->
+        <module name="WhitespaceAfter">
+            <property name="tokens" value="COMMA, LITERAL_IF, LITERAL_ELSE, LITERAL_WHILE, LITERAL_DO, LITERAL_FOR"/>
+        </module>
+        <!-- Checks that there is no whitespace after a token. More specifically, it checks that it is not followed by whitespace,
+             or (if linebreaks are allowed) all characters on the line after are whitespace.
+        -->
+        <!-- ~,minusminus,.,++,!,-,+,typecast -->
+        <module name="NoWhitespaceAfter">
+            <property name="tokens" value="BNOT, DEC, DOT, INC, LNOT, UNARY_MINUS, UNARY_PLUS"/>
+            <property name="allowLineBreaks" value="true"/>
+        </module>
+        <!-- Checks that there is no whitespace before a token. -->
+        <!-- ;,.,minusminus,++ -->
+        <module name="NoWhitespaceBefore">
+            <property name="tokens" value="SEMI, DOT, POST_DEC, POST_INC"/>
+            <property name="allowLineBreaks" value="true"/>
+        </module>
+        <!-- Checks that assignment operators are at the end of the line. -->
+        <module name="OperatorWrap">
+            <property name="option" value="eol"/>
+            <property name="tokens" value="ASSIGN"/>
+        </module>
+        <!-- Checks the policy on the padding of parentheses -->
+        <module name="ParenPad"/>
+        <!-- Checks that chosen statements are not line-wrapped, by default this checks PACKAGE_DEF, IMPORT, STATIC_IMPORT -->
+        <module name="NoLineWrap"/>
+        <!-- Checks the padding between the identifier of a method definition, constructor definition, method call, or constructor invocation -->
+        <module name="MethodParamPad"/>
+        <!-- Checks the policy on the padding of parentheses for typecasts -->
+        <module name="TypecastParenPad"/>
+        <!--Checks for empty line separators after header, package, all import declarations, fields, constructors, methods, nested classes, static initializers and instance initializers.-->
+        <module name="EmptyLineSeparator">
+            <property name="tokens" value="VARIABLE_DEF, METHOD_DEF"/>
+        </module>
+        <!--Checks that the whitespace around the Generic tokens (angle brackets) "<" and ">" are correct to the typical convention.-->
+        <module name="GenericWhitespace"/>
+        <!--
+            Checks the padding between the identifier of a method definition, constructor definition, method call,
+            or constructor invocation; and the left parenthesis of the parameter list.
+        -->
+        <module name="MethodParamPad"/>
+    </module>
+</module>
