@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- monitorInterval的作用是可以不重启应用，应用修改后的配置，如调整LEVEL -->
+<Configuration status="off" monitorInterval="5">
+    <!--
+        1. logger name相同时，以level级别高的为准
+        2. logger name = "org"会被 name="org.xxx"继承
+        3. logger中的additivity="true"表示子日志所获得的日志也会在父日志中出现，即使父日志的level高于子日志的level
+        4. 当子日志level大于父日志时，父日志只能接收到子日志过滤后的日志
+    -->
+    <!-- Logging Properties -->
+    <Properties>
+        <!--
+            c 用于输出的记录事件的类别。例如，对于类别名称"a.b.c" 模式  %c{2} 会输出 "b.c"
+            C 用于输出呼叫者发出日志请求的完全限定类名。例如，对于类名 "org.apache.xyz.SomeClass", 模式 %C{1} 会输出 "SomeClass".
+            d 用于输出的记录事件的日期。例如， %d{HH:mm:ss,SSS} 或 %d{dd MMM yyyy HH:mm:ss,SSS}.
+            F 用于输出被发出日志记录请求，其中的文件名
+            l 用于将产生的日志事件调用者输出位置信息
+            L 用于输出从被发出日志记录请求的行号
+            m 用于输出使用日志事件相关联的应用程序提供的消息
+            M 用于输出发出日志请求所在的方法名称
+            n 输出平台相关的行分隔符或文字
+            p 用于输出的记录事件的优先级
+            r 用于输出毫秒从布局的结构经过直到创建日志记录事件的数目
+            t 用于输出生成的日志记录事件的线程的名称
+            x 用于与产生该日志事件的线程相关联输出的NDC（嵌套诊断上下文）
+            X 在X转换字符后面是键为的MDC。例如  X{clientIP} 将打印存储在MDC对键clientIP的信息
+            % 文字百分号 %%将打印％标志
+        -->
+        <Property name="PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%-5p] %t %C:%L - %m%n</Property>
+        <Property name="LOG_HOME">./log</Property>
+    </Properties>
+
+    <Appenders>
+        <!-- 控制台输出 -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <!-- 控制台只输出level及以上级别的信息(onMatch)，其他的直接拒绝(onMismatch)-->
+            <!-- <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/> -->
+            <PatternLayout pattern="${PATTERN}"/>
+        </Console>
+
+        <!-- 滚动分割样例 -->
+        <RollingFile name="RollingLog" fileName="${LOG_HOME}/info.log" filePattern="${LOG_HOME}/info-%d{yyyy-MM-dd}-%i.log">
+            <!-- 接受DEBUG->ERROR所有的日志-->
+            <!-- <LevelRangeFilter minLevel="ERROR" maxLevel="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/> -->
+            <PatternLayout pattern="${PATTERN}"/>
+            <Policies>
+                <!-- 单个滚动的文件最大为10M -->
+                <SizeBasedTriggeringPolicy size="10M"/>
+            </Policies>
+            <!-- 滚动10次后，从第一个开始覆盖 -->
+            <DefaultRolloverStrategy max="10"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <!--
+            1. 日志的级别来看，appender如果定义了日志级别，就要以appender的为准
+            2. 如果additivity=true，则当前logger过滤后的日志都会输出到root上
+        -->
+        <!--
+            自定义样例 LoggerFactory.getLogger("run.log")
+            additivity=false 不会将日志输出到root上
+        -->
+        <Logger name="mylog" level="INFO" additivity="false">
+            <AppenderRef ref="RollingLog"/>
+        </Logger>
+        <!-- 根日志 -->
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
